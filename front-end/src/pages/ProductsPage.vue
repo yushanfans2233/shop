@@ -5,7 +5,9 @@
       <img :src="product.imageName" />
       <h3 class="product-name">{{ product.name }}</h3>
       <p class="product-price">{{ product.price }}</p>
-      <button>查看详细信息</button>
+      <router-link :to="'/products/' + product.id">
+        <button>查看详细信息</button>
+      </router-link>
     </div>
   </div>
 </template>
