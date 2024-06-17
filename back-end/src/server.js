@@ -1,14 +1,20 @@
 import express from 'express';
+import { MongoClient } from 'mongodb';
 import { cartItems as cartItemsRaw, products as productsRaw } from './temp-data';
 
 let cartItems = cartItemsRaw;
 let products = productsRaw;
 
+const url = "mongodb://localhost:27017/"
+const client = new MongoClient(url)
+
 const app = express();
 app.use(express.json());
 
-app.get('/hello', (req, res) => {
-  res.send('Hello!');
+app.get('/hello', async (req, res) => {
+  const db = client.db('product');
+  const product = await db.collection('product').find().toArray();
+  res.send(product);
 });
 
 app.get('/products', (req, res) => {
