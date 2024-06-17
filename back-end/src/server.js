@@ -11,23 +11,25 @@ const client = new MongoClient(url)
 const app = express();
 app.use(express.json());
 
-app.get('/hello', async (req, res) => {
+app.get('/products', async (req, res) => {
+  await client.connect();
   const db = client.db('product');
-  const product = await db.collection('product').find().toArray();
-  res.send(product);
-});
-
-app.get('/products', (req, res) => {
+  const products = await db.collection('product').find().toArray();
   res.json(products);
 });
 
-function populateCartIds(ids) {
-  return ids.map(id => products.find(product => product.id === id));
+async function populateCartIds(ids) {
+    await client.connect();
+  const db = client.db('product');
+  return Promise.all(ids.map(id => db.collection('product').findOne({id})));
 }
 
-app.get('/cart', (req, res) => {
-  const populatedCart = populateCartIds(cartItems);
-  res.json(populatedCart);
+app.get('/user/:userId/cart', async (req, res) => {
+    await client.connect();
+    const db = client.db('user');
+    const user = await db.collection('user').findOne({ id: req.params.userId });
+    const populatedCart = await populateCartIds(user.cartItems);
+    res.json(populatedCart);
 });
 
 app.get('/products/:productId', (req, res) => {
