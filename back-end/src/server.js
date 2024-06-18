@@ -1,9 +1,5 @@
 import express from 'express';
 import { MongoClient } from 'mongodb';
-import { cartItems as cartItemsRaw, products as productsRaw } from './temp-data';
-
-let cartItems = cartItemsRaw;
-let products = productsRaw;
 
 async function start() {
   const url = "mongodb://localhost:27017/";
@@ -36,17 +32,29 @@ async function start() {
     res.json(product);
   });
 
-  app.post('/cart', (req, res) => {
+  app.post('/users/:userId/cart', async (req, res) => {
+    const userId = req.params.userId;
     const productId = req.body.id;
-    cartItems.push(productId);
-    const populatedCart = populateCartIds(cartItems);
+
+    await db.collection('users').updateOne({ id: userId }, {
+      $addToSet: { cartItems: productId }
+    });
+
+    const user = await db.collection('users').findOne({ id: req.params.userId });
+    const populatedCart = await populateCartIds(user.cartItems);
     res.json(populatedCart);
   });
 
-  app.delete('/cart/:productId', (req, res) => {
+  app.delete('/users/:userId/cart/:productId', async (req, res) => {
+    const userId = req.params.userId;
     const productId = req.params.productId;
-    cartItems = cartItems.filter(id => id !== productId);
-    const populatedCart = populateCartIds(cartItems);
+
+    await db.collection('users').updateOne({ id: userId }, {
+      $pull: { cartItems: productId },
+    });
+
+    const user = await db.collection('users').findOne({ id: req.params.userId });
+    const populatedCart = await populateCartIds(user.cartItems);
     res.json(populatedCart);
   });
 
