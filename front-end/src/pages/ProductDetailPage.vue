@@ -6,23 +6,24 @@
     <div class="product-details">
       <h1>{{ product.name }}</h1>
       <h3 class="price">{{ product.price }}</h3>
-      <button @click="addToCart" class="add-to-cart" v-if="!itemIsInCart">加入购物车</button>
-      <button class="grey-button" v-if="itemIsInCart">已添加</button>
-      <button class="sign-in" @click="signIn">Sign in to add to cart</button>
+      <button @click="addToCart" class="add-to-cart" v-if="user && !itemIsInCart">Add to cart</button>
+      <button class="grey-button" v-if="user && itemIsInCart">Item is already in cart</button>
+      <button class="sign-in" @click="signIn" v-if="!user">Sign in to add to cart</button>
     </div>
   </div>
   <div v-else>
-    <NotFoundPage />
+    <NotFoundPage/>
   </div>
 </template>
-  
+
 <script>
-import { getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink } from 'firebase/auth';
+import {getAuth, sendSignInLinkToEmail, isSignInWithEmailLink, signInWithEmailLink} from 'firebase/auth';
 import axios from 'axios';
 import NotFoundPage from './NotFoundPage.vue'
 
 export default {
   name: "ProductDetailPage",
+  props: ['user'],
   data() {
     return {
       product: {},
@@ -32,11 +33,20 @@ export default {
   computed: {
     itemIsInCart() {
       return this.cartItems.some(item => item.id === this.$route.params.productId);
+    }
+  },
+  watch: {
+    async user(newUserValue) {
+      if (newUserValue) {
+        const cartResponse = await axios.get(`/api/users/${newUserValue.uid}/cart`);
+        const cartItems = cartResponse.data;
+        this.cartItems = cartItems;
       }
+    }
   },
   methods: {
     async addToCart() {
-      await axios.post('/api/users/12345/cart', { id: this.$route.params.productId });
+      await axios.post('/api/users/12345/cart', {id: this.$route.params.productId});
       alert('Successfully added item to cart!');
     },
     async signIn() {
@@ -66,7 +76,7 @@ export default {
     const response = await axios.get(`/api/products/${this.$route.params.productId}`);
     const product = response.data;
     this.product = product;
-    
+
     const cartResponse = await axios.get('/api/users/12345/cart');
     const cartItems = cartResponse.data;
     this.cartItems = cartItems;
