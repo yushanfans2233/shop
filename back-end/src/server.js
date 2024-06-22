@@ -3,7 +3,7 @@ import { MongoClient } from 'mongodb';
 import path from 'path';
 
 async function start() {
-  const url = "mongodb://localhost:27017/";
+  const url = process.env.MONGODB_CONNECT_LINK;
   const client = new MongoClient(url);
 
   await client.connect();
@@ -12,7 +12,13 @@ async function start() {
   const app = express();
   app.use(express.json());
 
+  app.use(express.static('dist'));
+
   app.use('/images', express.static(path.join(__dirname, '../assets')));
+
+  app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
 
   app.get('/api/products', async (req, res) => {
     const products = await db.collection('products').find({}).toArray();
