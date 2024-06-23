@@ -26,14 +26,6 @@ jobs:
           npm install
           npm run build --if-present
           npm run test --if-present
-        working-directory: ./front-end
-
-      - name: npm install, build, and test
-        run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
-        working-directory: ./back-end
 
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
@@ -50,8 +42,6 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    permissions:
-      id-token: write #This is required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
@@ -61,13 +51,6 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-      
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_02405D34B86D4B5FAE998CE78C16233F }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_CF8DEF6C422C4D118301204D21F19019 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_DC85862533C04121961C8FB5E7F890BF }}
 
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
@@ -75,6 +58,5 @@ jobs:
         with:
           app-name: 'oil-shop'
           slot-name: 'Production'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AF8B4AE2040844B88C8DD76844C0EE4F }}
           package: .
-          startup-command: 'npx babel-node .\src\server.js'
-          working-directory: ./back-end
