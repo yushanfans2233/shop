@@ -67,6 +67,4 @@ jobs:
           app-name: 'oil-shop'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_AF8B4AE2040844B88C8DD76844C0EE4F }}
-          package: .
-          startup-command: 'npx babel-node .\src\server.js'
-          working-directory: ./back-end
+          package: ./back-end
