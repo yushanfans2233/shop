@@ -73,8 +73,10 @@ async function start() {
     res.json(populatedCart);
   });
 
-  app.listen(8000, () => {
-    console.log('Server is listening on port 8000')
+  const port = process.env.PORT || 8000
+
+  app.listen(port, () => {
+    console.log(`Server is listening on port ${port}`)
   });
 }
 
